@@ -100,7 +100,6 @@ namespace Microsoft.Playwright.Tests
             }");
             Assert.AreEqual(await Page.EvalOnSelectorAsync<string>("div:right-of(#id6)", "e => e.id"), "id7");
             Assert.AreEqual(await Page.EvalOnSelectorAsync<string>("div >> right-of=\"#id6\"", "e => e.id"), "id7");
-            Assert.AreEqual(await Page.Locator("div", new() { RightOf = Page.Locator("#id6") }).First.EvaluateAsync<string>("e => e.id"), "id7");
             Assert.AreEqual(await Page.EvalOnSelectorAsync<string>("div:right-of(#id1)", "e => e.id"), "id2");
             Assert.AreEqual(await Page.EvalOnSelectorAsync<string>("div >> right-of=\"#id1\"", "e => e.id"), "id2");
             Assert.AreEqual(await Page.EvalOnSelectorAsync<string>("div:right-of(#id3)", "e => e.id"), "id4");
@@ -113,7 +112,6 @@ namespace Microsoft.Playwright.Tests
             Assert.AreEqual(await Page.EvalOnSelectorAsync<string>("div >> right-of=\"#id8\"", "e => e.id"), "id9");
             Assert.AreEqual(await Page.EvalOnSelectorAllAsync<string>("div:right-of(#id3)", "els => els.map(e => e.id).join(',')"), "id4,id2,id5,id7,id8,id9");
             Assert.AreEqual(await Page.EvalOnSelectorAllAsync<string>("div >> right-of=\"#id3\"", "els => els.map(e => e.id).join(',')"), "id4,id2,id5,id7,id8,id9");
-            Assert.AreEqual(await Page.Locator("div", new() { RightOf = Page.Locator("#id3") }).Locator("span").EvaluateAllAsync<string>("els => els.map(e => e.textContent).join(',')"), "4,2,5,7,8,9");
             Assert.AreEqual(await Page.EvalOnSelectorAllAsync<string>("div:right-of(#id3, 50)", "els => els.map(e => e.id).join(',')"), "id2,id5,id7,id8");
             Assert.AreEqual(await Page.EvalOnSelectorAllAsync<string>("div >> right-of=\"#id3\",50", "els => els.map(e => e.id).join(',')"), "id2,id5,id7,id8");
             Assert.AreEqual(await Page.EvalOnSelectorAllAsync<string>("div >> right-of=\"#id3\",50 >> span", "els => els.map(e => e.textContent).join(',')"), "2,5,7,8");
@@ -123,7 +121,6 @@ namespace Microsoft.Playwright.Tests
 
             Assert.AreEqual(await Page.EvalOnSelectorAsync<string>("div:left-of(#id2)", "e => e.id"), "id1");
             Assert.AreEqual(await Page.EvalOnSelectorAsync<string>("div >> left-of=\"#id2\"", "e => e.id"), "id1");
-            Assert.AreEqual(await Page.Locator("div", new() { LeftOf = Page.Locator("#id2") }).First.EvaluateAsync<string>("e => e.id"), "id1");
             Assert.AreEqual(await Page.QuerySelectorAsync("div:left-of(#id0)"), null);
             Assert.AreEqual(await Page.QuerySelectorAsync("div >> left-of=\"#id0\""), null);
             Assert.AreEqual(await Page.EvalOnSelectorAsync<string>("div:left-of(#id5)", "e => e.id"), "id0");
@@ -140,7 +137,6 @@ namespace Microsoft.Playwright.Tests
 
             Assert.AreEqual(await Page.EvalOnSelectorAsync<string>("div:above(#id0)", "e => e.id"), "id3");
             Assert.AreEqual(await Page.EvalOnSelectorAsync<string>("div >> above=\"#id0\"", "e => e.id"), "id3");
-            Assert.AreEqual(await Page.Locator("div", new() { Above = Page.Locator("#id0") }).First.EvaluateAsync<string>("e => e.id"), "id3");
             Assert.AreEqual(await Page.EvalOnSelectorAsync<string>("div:above(#id5)", "e => e.id"), "id4");
             Assert.AreEqual(await Page.EvalOnSelectorAsync<string>("div >> above=\"#id5\"", "e => e.id"), "id4");
             Assert.AreEqual(await Page.EvalOnSelectorAsync<string>("div:above(#id7)", "e => e.id"), "id5");
@@ -158,7 +154,6 @@ namespace Microsoft.Playwright.Tests
 
             Assert.AreEqual(await Page.EvalOnSelectorAsync<string>("div:below(#id4)", "e => e.id"), "id5");
             Assert.AreEqual(await Page.EvalOnSelectorAsync<string>("div >> below=\"#id4\"", "e => e.id"), "id5");
-            Assert.AreEqual(await Page.Locator("div", new() { Below = Page.Locator("#id4") }).First.EvaluateAsync<string>("e => e.id"), "id5");
             Assert.AreEqual(await Page.EvalOnSelectorAsync<string>("div:below(#id3)", "e => e.id"), "id0");
             Assert.AreEqual(await Page.EvalOnSelectorAsync<string>("div >> below=\"#id3\"", "e => e.id"), "id0");
             Assert.AreEqual(await Page.EvalOnSelectorAsync<string>("div:below(#id2)", "e => e.id"), "id4");
@@ -178,7 +173,6 @@ namespace Microsoft.Playwright.Tests
 
             Assert.AreEqual(await Page.EvalOnSelectorAsync<string>("div:near(#id0)", "e => e.id"), "id3");
             Assert.AreEqual(await Page.EvalOnSelectorAsync<string>("div >> near=\"#id0\"", "e => e.id"), "id3");
-            Assert.AreEqual(await Page.Locator("div", new() { Near = Page.Locator("#id0") }).First.EvaluateAsync<string>("e => e.id"), "id3");
             Assert.AreEqual(await Page.EvalOnSelectorAllAsync<string>("div:near(#id7)", "els => els.map(e => e.id).join(',')"), "id0,id5,id3,id6");
             Assert.AreEqual(await Page.EvalOnSelectorAllAsync<string>("div >> near=\"#id7\"", "els => els.map(e => e.id).join(',')"), "id0,id5,id3,id6");
             Assert.AreEqual(await Page.EvalOnSelectorAllAsync<string>("div:near(#id0)", "els => els.map(e => e.id).join(',')"), "id3,id6,id7,id8,id1,id5");
@@ -194,7 +188,6 @@ namespace Microsoft.Playwright.Tests
             Assert.AreEqual(await Page.EvalOnSelectorAllAsync<string>("div >> below=\"#id5\" >> above=\"#id8\"", "els => els.map(e => e.id).join(',')"), "id7,id6");
             Assert.AreEqual(await Page.EvalOnSelectorAsync<string>("div:below(#id5):above(#id8)", "e => e.id"), "id7");
             Assert.AreEqual(await Page.EvalOnSelectorAsync<string>("div >> below=\"#id5\" >> above=\"#id8\"", "e => e.id"), "id7");
-            Assert.AreEqual(await Page.Locator("div", new() { Below = Page.Locator("#id5"), Above = Page.Locator("#id8") }).First.EvaluateAsync<string>("e => e.id"), "id7");
 
             Assert.AreEqual(await Page.EvalOnSelectorAllAsync<string>("div:right-of(#id0) + div:above(#id8)", "els => els.map(e => e.id).join(',')"), "id5,id6,id3");
 
