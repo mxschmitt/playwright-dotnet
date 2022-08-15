@@ -24,43 +24,34 @@
 
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
-using NUnit.Framework;
-using System.IO;
+using System.Linq;
+using Microsoft.Playwright.TestAdapter;
+using MSTestUnitTesting = Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.Playwright.NUnit
+namespace Microsoft.Playwright.MSTest
 {
-    public class BrowserTest : PlaywrightTest
+    public class TestMethodAttribute : MSTestUnitTesting.TestMethodAttribute
     {
-        public IBrowser Browser { get; internal set; } = null!;
-        private readonly List<IBrowserContext> _contexts = new();
-
-        public async Task<IBrowserContext> NewContext(BrowserNewContextOptions options)
+        public override MSTestUnitTesting.TestResult[] Execute(MSTestUnitTesting.ITestMethod testMethod)
         {
-            var context = await Browser.NewContextAsync(options).ConfigureAwait(false);
-            _contexts.Add(context);
-            return context;
-        }
-
-        [SetUp]
-        public async Task BrowserSetup()
-        {
-            var service = await BrowserService.Register(this, BrowserType).ConfigureAwait(false);
-            Browser = service.Browser;
-        }
-
-        [TearDown]
-        public async Task BrowserTearDown()
-        {
-            if (TestOk())
+            List<MSTestUnitTesting.TestResult> testResults = new();
+            var key = testMethod.TestClassName + "." + testMethod.TestMethodName;
+            Console.WriteLine("Attribute " + key);
+            while (!TestHarnessStorage.IsLastRun(key))
             {
-                foreach (var context in _contexts)
+                var results = base.Execute(testMethod);
+                var allPassed = (results ?? new MSTestUnitTesting.TestResult[] { }).All(r => r.Outcome == MSTestUnitTesting.UnitTestOutcome.Passed);
+                
+                testResults.AddRange(results.ToList());
+                TestHarnessStorage.IncrementRunCount(key);
+                if (allPassed)
                 {
-                    await context.CloseAsync().ConfigureAwait(false);
+                    break;
                 }
             }
-            _contexts.Clear();
-            Browser = null!;
+            TestHarnessStorage.ResetRunCount(key);
+            return testResults.ToArray();
         }
     }
 }
+

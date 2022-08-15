@@ -1,3 +1,4 @@
+using System;
 using Microsoft.Playwright.Core;
 
 namespace Microsoft.Playwright
@@ -7,5 +8,7 @@ namespace Microsoft.Playwright
         public static ILocatorAssertions Expect(ILocator locator) => new LocatorAssertions(locator, false);
 
         public static IPageAssertions Expect(IPage page) => new PageAssertions(page, false);
+
+        public static void SetDefaultTimeout() => throw new NotImplementedException();
     }
 }

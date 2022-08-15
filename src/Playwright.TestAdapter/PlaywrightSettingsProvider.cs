@@ -101,6 +101,42 @@ namespace Microsoft.Playwright.TestAdapter
             }
         }
 
+        public static AssetMode Trace
+        {
+            get
+            {
+                return _settings?.Trace ?? AssetMode.Off;
+            }
+            private set { }
+        }
+
+        public static AssetMode Video
+        {
+            get
+            {
+                return _settings?.Video ?? AssetMode.Off;
+            }
+            private set { }
+        }
+
+        public static AssetMode Screenshot
+        {
+            get
+            {
+                return _settings?.Screenshot ?? AssetMode.Off;
+            }
+            private set { }
+        }
+
+        public static int Retries
+        {
+            get
+            {
+                return _settings?.Retries ?? 0;
+            }
+            private set { }
+        }
+
         public void Load(XmlReader reader)
             => _settings = new PlaywrightSettingsXml(reader);
     }

@@ -57,11 +57,49 @@ namespace Microsoft.Playwright.TestAdapter
                         reader.Read();
                         ExpectTimeout = float.Parse(reader.Value);
                         break;
+                    case "Trace":
+                        reader.Read();
+                        Trace = ParseAssetMode(reader.Value);
+                        break;
+                    case "Screenshot":
+                        reader.Read();
+                        Screenshot = ParseAssetMode(reader.Value);
+                        break;
+                    case "Video":
+                        reader.Read();
+                        Video = ParseAssetMode(reader.Value);
+                        break;
+                    case "Retries":
+                        reader.Read();
+                        Retries = int.Parse(reader.Value);
+                        break;
                     default:
                         Console.Error.WriteLine($"Playwright RunSettings Parsing Error: Playwright>{reader.Name} is not implemented");
                         break;
                 }
             }
+        }
+
+        private static AssetMode? ParseAssetMode(string value)
+        {
+            if (string.IsNullOrEmpty(value))
+            {
+                return null;
+            }
+            var type = typeof(AssetMode);
+            foreach (string valueName in Enum.GetNames(type))
+            {
+                var field = type.GetField(valueName);
+                if (valueName == value)
+                {
+                    return (AssetMode)field.GetValue(null);
+                }
+                if (field.GetCustomAttribute<EnumMemberAttribute>()?.Value == value)
+                {
+                    return (AssetMode)field.GetValue(null);
+                }
+            }
+            return null;
         }
 
         private static T ParseXmlIntoClass<T>(XmlReader reader) where T : class, new()
@@ -138,6 +176,10 @@ namespace Microsoft.Playwright.TestAdapter
         public string? BrowserName { get; private set; }
         public bool? Headless { get; private set; }
         public float? ExpectTimeout { get; private set; }
+        public AssetMode? Screenshot { get; private set; }
+        public AssetMode? Trace { get; private set; }
+        public AssetMode? Video { get; private set; }
+        public int? Retries { get; private set; }
     }
 }
 

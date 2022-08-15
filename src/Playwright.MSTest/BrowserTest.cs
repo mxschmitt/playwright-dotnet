@@ -25,7 +25,12 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Playwright.MSTest.Services;
+using Microsoft.Playwright.TestAdapter;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.IO;
+using System;
+
+using Settings = Microsoft.Playwright.TestAdapter.PlaywrightSettingsProvider;
 
 namespace Microsoft.Playwright.MSTest
 {
@@ -34,10 +39,24 @@ namespace Microsoft.Playwright.MSTest
     {
         public IBrowser Browser { get; private set; } = null!;
         private readonly List<IBrowserContext> _contexts = new();
+        private readonly string _tempDirectory = Path.Combine(Path.GetTempPath(), $"playwright-mstest-{Guid.NewGuid().ToString()}");
 
-        public async Task<IBrowserContext> NewContextAsync(BrowserNewContextOptions? options)
+        public async Task<IBrowserContext> NewContextAsync(BrowserNewContextOptions options)
         {
-            var context = await Browser!.NewContextAsync(options).ConfigureAwait(false);
+            if (new HashSet<AssetMode>(new[] { AssetMode.On, AssetMode.OnFirstRetry, AssetMode.RetainOnFailure }).Contains(Settings.Video))
+            {
+                options.RecordVideoDir = _tempDirectory;
+            }
+            var context = await Browser.NewContextAsync(options).ConfigureAwait(false);
+            if (new HashSet<AssetMode>(new[] { AssetMode.On, AssetMode.OnFirstRetry, AssetMode.RetainOnFailure }).Contains(Settings.Trace))
+            {
+                await context.Tracing.StartAsync(new() {
+                    Screenshots = true,
+                    Snapshots = true,
+                    Sources = true,
+                    Name = $"{TestContext.FullyQualifiedTestClassName}.{TestContext.TestName}"
+                }).ConfigureAwait(false);
+            }
             _contexts.Add(context);
             return context;
         }
@@ -45,21 +64,35 @@ namespace Microsoft.Playwright.MSTest
         [TestInitialize]
         public async Task BrowserSetup()
         {
+            Directory.CreateDirectory(_tempDirectory);
             Browser = (await GetService<BrowserService>().ConfigureAwait(false)).Browser;
         }
 
         [TestCleanup]
         public async Task BrowserTearDown()
         {
-            if (TestOK)
+            var isLastRun = TestHarnessStorage._runCountPerTest[TestContext.FullyQualifiedTestClassName +  "." + TestContext.TestName] == Settings.Retries;
+            foreach (var context in _contexts)
             {
-                foreach (var context in _contexts)
+                var shouldSaveTrace = Settings.Trace == AssetMode.On ||
+                                            (Settings.Trace == AssetMode.OnFirstRetry && isLastRun) ||
+                                            Settings.Trace == AssetMode.RetainOnFailure && !TestOK;
+                if (shouldSaveTrace)
                 {
-                    await context.CloseAsync().ConfigureAwait(false);
+                    var traceFile = GenerateTestAssetFileName("trace.zip");
+                    await context.Tracing.StopAsync(new () { Path = GenerateTestAssetFileName("trace.zip") }).ConfigureAwait(false);
+                    TestContext.AddResultFile(traceFile);
                 }
+                await context.CloseAsync().ConfigureAwait(false);
             }
             _contexts.Clear();
             Browser = null!;
+            Directory.Delete(_tempDirectory, true);
+        }
+
+        private string GenerateTestAssetFileName(string fileName)
+        {
+            return Path.Combine(TestContext.ResultsDirectory, TestContext.FullyQualifiedTestClassName, $"{TestContext.TestName}.{fileName}");
         }
     }
 }

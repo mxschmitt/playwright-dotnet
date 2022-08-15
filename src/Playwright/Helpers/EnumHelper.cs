@@ -59,7 +59,7 @@ namespace Microsoft.Playwright.Helpers
             return enumValues[value];
         }
 
-        public static TEnum FromValueString<TEnum>(string value)
+        public static TEnum? FromValueString<TEnum>(string value)
             where TEnum : struct, Enum
         {
             var enumValues = StringToEnumCache.GetOrAdd(typeof(TEnum), type =>
@@ -79,8 +79,11 @@ namespace Microsoft.Playwright.Helpers
 
                 return dictionary;
             });
-
-            return (TEnum)enumValues[value];
+            if (enumValues.TryGetValue(value, out var enumValue))
+            {
+                return (TEnum)enumValue;
+            }
+            return null;
         }
     }
 }
